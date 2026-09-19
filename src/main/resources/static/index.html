@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>铁路信号沙盘 · 离线验证台</title>
+<link rel="stylesheet" href="app.css"/>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">🚦 铁路信号沙盘 <span class="sub">离线联锁验证 · 显式状态机 · 最短反例</span></div>
+  <nav class="tabs">
+    <button data-tab="dashboard" class="active">总览</button>
+    <button data-tab="topology">拓扑</button>
+    <button data-tab="rules">规则版本</button>
+    <button data-tab="scenarios">场景/时间步进</button>
+    <button data-tab="verify">验证与反例</button>
+    <button data-tab="compare">候选对比</button>
+    <button data-tab="package">验证包</button>
+  </nav>
+</header>
+
+<main>
+  <!-- Dashboard -->
+  <section id="tab-dashboard" class="tab active">
+    <div class="cards" id="dashCards"></div>
+    <h3>当前批准（冻结）</h3>
+    <pre id="approvalBox" class="box">加载中…</pre>
+    <h3>最近验证报告</h3>
+    <div id="reportList" class="list"></div>
+  </section>
+
+  <!-- Topology -->
+  <section id="tab-topology" class="tab">
+    <div class="grid2">
+      <div>
+        <h3>导入拓扑（原始证据，只追加新版本）</h3>
+        <div class="row"><input id="topName" placeholder="拓扑名称" value="导入拓扑"/></div>
+        <textarea id="topJson" class="json" placeholder="粘贴拓扑 JSON"></textarea>
+        <div class="row">
+          <button id="btnImportTop">导入为新版本</button>
+          <button id="btnSampleTop" class="ghost">填入样例</button>
+        </div>
+        <h3>历史版本</h3>
+        <div id="topList" class="list"></div>
+      </div>
+      <div>
+        <h3>拓扑视图 <small id="topCanvasHint"></small></h3>
+        <canvas id="topCanvas" width="640" height="420"></canvas>
+        <div id="topIssues" class="issues"></div>
+        <h3>结构摘要</h3>
+        <pre id="topSummary" class="box"></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rules -->
+  <section id="tab-rules" class="tab">
+    <div class="grid2">
+      <div>
+        <h3>规则候选编辑器</h3>
+        <div class="row"><label>版本号</label><input id="ruleVersion" value="v3-candidate"/></div>
+        <div class="row"><label>备注</label><input id="ruleNote" placeholder="本版改动说明"/></div>
+        <div id="ruleFlags" class="flags"></div>
+        <div class="row"><label>侧线允许速度</label><input id="ruleSpeed" type="number" value="25"/></div>
+        <div class="row">
+          <button id="btnCreateRule">新建候选</button>
+          <button id="btnSaveRule" class="warn">保存到所选候选（乐观锁）</button>
+          <button id="btnMergeRule" class="ghost">三路合并提交</button>
+        </div>
+        <div id="mergeOut" class="issues"></div>
+      </div>
+      <div>
+        <h3>规则版本列表（★ 为批准版）</h3>
+        <div id="ruleList" class="list"></div>
+        <pre id="ruleConflictBox" class="box hidden"></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- Scenarios + stepping -->
+  <section id="tab-scenarios" class="tab">
+    <div class="grid2">
+      <div>
+        <h3>场景版本（故障插入 = 新版本，不回写）</h3>
+        <div id="scenarioList" class="list"></div>
+        <h3>基于当前版本新建场景</h3>
+        <div class="row"><input id="scName" value="新场景"/></div>
+        <textarea id="scJson" class="json"></textarea>
+        <div class="row">
+          <button id="btnSaveScenario">保存为新版本</button>
+          <button id="btnSampleScenario" class="ghost">填入竞争场景</button>
+        </div>
+      </div>
+      <div>
+        <h3>时间步进（手工执行）</h3>
+        <div class="row" id="stepCtx"></div>
+        <div class="row">
+          <select id="stepOp">
+            <option>REQUEST_ROUTE</option>
+            <option>CLEAR_SIGNAL</option>
+            <option>ENTER_SECTION</option>
+            <option>RELEASE_SECTION_NEXT</option>
+            <option>FINISH_ROUTE</option>
+            <option>MOVE_SWITCH</option>
+            <option>INJECT_SECTION_FAULT</option>
+            <option>CLEAR_SECTION_FAULT</option>
+            <option>INJECT_SWITCH_FAULT</option>
+            <option>CLEAR_SWITCH_FAULT</option>
+          </select>
+          <input id="stepTarget" placeholder="目标 id（如 R1 / SW1 / S0）"/>
+          <select id="stepPos"><option value="">位置-</option><option>PLUS</option><option>MINUS</option></select>
+          <input id="stepTrain" placeholder="列车（ENTER 时）" value="T1"/>
+        </div>
+        <div class="row">
+          <button id="btnStepInit">⏮ 复位到初始状态</button>
+          <button id="btnStepOne" class="primary">▶ 单步执行</button>
+          <button id="btnFaultVersion" class="warn">把当前故障固化为新场景版本</button>
+        </div>
+        <pre id="stepState" class="box tall"></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- Verify -->
+  <section id="tab-verify" class="tab">
+    <div class="row wrap">
+      <select id="verifyTop"></select>
+      <select id="verifyRule"></select>
+      <select id="verifyScenario"></select>
+      <label>显式上限</label><input id="verifyBound" type="number" value="5000" style="width:110px"/>
+      <button id="btnVerify" class="primary">开始显式探索</button>
+      <button id="btnVerifyApproved" class="ghost">验证当前批准版</button>
+    </div>
+    <div id="verifySummary" class="issues"></div>
+    <div class="grid2">
+      <div>
+        <h3>最短反例逐步诊断</h3>
+        <div id="traceView" class="trace"></div>
+      </div>
+      <div>
+        <h3>本步状态 / 未满足不变量</h3>
+        <pre id="traceState" class="box tall">（选择左侧某一步）</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- Compare -->
+  <section id="tab-compare" class="tab">
+    <div class="row wrap">
+      <select id="cmpRule"></select>
+      <select id="cmpScenario"></select>
+      <label>上限</label><input id="cmpBound" type="number" value="5000" style="width:110px"/>
+      <button id="btnCompare" class="primary">同场景 · 候选 vs 批准</button>
+    </div>
+    <div id="cmpOut"></div>
+  </section>
+
+  <!-- Package -->
+  <section id="tab-package" class="tab">
+    <div class="grid2">
+      <div>
+        <h3>导出确定性验证包</h3>
+        <div class="row"><select id="pkgTop"></select></div>
+        <div class="row"><select id="pkgRule"></select></div>
+        <div class="row"><select id="pkgScenario"></select></div>
+        <div class="row"><button id="btnExport" class="primary">生成并下载 JSON 验证包</button></div>
+        <h3>在本机重放外来验证包（应选出同一条最小反例）</h3>
+        <input type="file" id="pkgFile" accept="application/json"/>
+        <pre id="replayOut" class="box"></pre>
+      </div>
+      <div>
+        <h3>验证包说明</h3>
+        <pre class="box">包内包含：拓扑/规则/场景全部输入、上限、
+三个 SHA-256 指纹、期望报告。
+导入端不信任报告，而是重新跑一次 BFS，
+逐 trigger 比对反例路径与长度。
+排序：按 actor id、操作类型、目标确定性排序，
+状态按 canonical() 归并，因此跨机器结果一致。</pre>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="toast" class="toast hidden"></div>
+<script src="app.js"></script>
+</body>
+</html>
