@@ -34,3 +34,6 @@ coverage/
 .vite/
 .turbo/
 *.tsbuildinfo
+data/*.mv.db
+data/*.trace.db
+data/*.lock.db

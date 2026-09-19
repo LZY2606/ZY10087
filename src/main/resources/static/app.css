@@ -1,0 +1,84 @@
+:root {
+  color-scheme: light;
+  --bg: #f4f6f8;
+  --card: #ffffff;
+  --ink: #17202a;
+  --muted: #66717d;
+  --line: #d7dde4;
+  --primary: #1d65c1;
+  --danger: #b4232a;
+  --ok: #087a46;
+  --warn: #a86500;
+  --soft-blue: #eef5ff;
+  --soft-red: #fff0f1;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); }
+header {
+  display: flex; justify-content: space-between; align-items: center; gap: 24px;
+  padding: 24px 32px; background: #10233d; color: white;
+}
+h1 { margin: 0 0 6px; font-size: 26px; }
+h2 { margin: 0 0 14px; font-size: 17px; }
+p { margin: 0; }
+main { padding: 22px 28px 40px; max-width: 1440px; margin: 0 auto; }
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  padding: 18px; box-shadow: 0 8px 22px rgba(23, 32, 42, .05); margin-bottom: 20px;
+}
+.grid.two { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid.three { display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 20px; }
+.header-actions, .form-row, .controls, .tabs { display: flex; align-items: end; gap: 10px; flex-wrap: wrap; }
+button, .file-button {
+  border: 1px solid #9ca9b6; background: #fff; color: var(--ink); border-radius: 8px;
+  padding: 8px 12px; font: inherit; cursor: pointer;
+}
+button:hover, .file-button:hover { border-color: var(--primary); color: var(--primary); }
+button.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+button.primary:hover { color: #fff; opacity: .9; }
+input, select, textarea {
+  width: 100%; border: 1px solid #a8b2bd; border-radius: 8px; padding: 8px 10px;
+  font: inherit; background: white; color: var(--ink);
+}
+label { display: grid; gap: 5px; font-size: 13px; color: var(--muted); }
+.form-row label { min-width: 160px; flex: 1; }
+pre {
+  background: #0f1720; color: #d7e3ee; border-radius: 9px; padding: 12px;
+  overflow: auto; max-height: 360px; font-size: 12px; line-height: 1.45; white-space: pre-wrap;
+}
+.approval-card pre { max-height: 170px; }
+#topologySvg { width: 100%; height: 330px; border: 1px solid var(--line); border-radius: 10px; background: #fbfcfe; }
+.section-node { fill: #e8f1ff; stroke: #2868b7; stroke-width: 2; }
+.section-node.fault { fill: #ffd7d9; stroke: var(--danger); }
+.switch-node { fill: #fff3ce; stroke: #ad7700; stroke-width: 2; }
+.signal-node { fill: #e6f8ee; stroke: var(--ok); stroke-width: 2; }
+.rail { stroke: #596778; stroke-width: 4; fill: none; }
+.rail.forward { marker-end: url(#arrow); }
+.node-label { font-size: 13px; font-weight: 700; text-anchor: middle; dominant-baseline: middle; }
+.small-label { font-size: 10px; fill: #42505e; text-anchor: middle; }
+.comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+.report { border: 1px solid var(--line); border-radius: 10px; padding: 12px; overflow: auto; max-height: 460px; }
+.report.safe { border-color: var(--ok); background: #f1fbf6; }
+.report.bad { border-color: var(--danger); background: var(--soft-red); }
+.report.bound { border-color: var(--warn); background: #fff8e8; }
+.report h3 { margin: 0 0 8px; font-size: 15px; }
+.metric { display: inline-grid; margin: 0 10px 8px 0; color: var(--muted); font-size: 12px; }
+.metric strong { color: var(--ink); font-size: 16px; }
+.diagnostics:empty { display: none; }
+.diagnostics { margin-top: 10px; display: grid; gap: 6px; }
+.issue { padding: 8px 10px; border-radius: 8px; font-size: 13px; }
+.issue.error { background: var(--soft-red); color: var(--danger); }
+.issue.warning { background: #fff7df; color: var(--warn); }
+.hint { color: var(--muted); font-size: 13px; line-height: 1.5; margin-bottom: 10px; }
+.tabs button.active { background: var(--primary); color: white; border-color: var(--primary); }
+.file-button input { display: none; }
+textarea { min-height: 260px; resize: vertical; }
+#toast {
+  position: fixed; right: 20px; bottom: 20px; display: none; max-width: 440px;
+  background: #10233d; color: white; padding: 12px 14px; border-radius: 10px; box-shadow: 0 8px 24px #0004;
+}
+@media (max-width: 960px) {
+  header, .grid.two, .grid.three, .comparison { display: grid; grid-template-columns: 1fr; }
+  header { padding: 20px; }
+}

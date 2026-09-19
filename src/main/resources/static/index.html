@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>铁路信号离线沙盘</title>
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<header>
+  <div>
+    <h1>铁路信号离线沙盘</h1>
+    <p>拓扑导入 · 状态机验证 · 规则版本比较 · 可回放反例</p>
+  </div>
+  <div class="header-actions">
+    <button id="refresh">刷新状态</button>
+    <button id="exportPackage">导出验证包</button>
+    <label class="file-button">导入验证包<input id="importPackage" type="file" accept=".zip"></label>
+  </div>
+</header>
+
+<main>
+  <section class="card approval-card">
+    <h2>当前批准冻结点</h2>
+    <pre id="approval">加载中…</pre>
+    <div class="form-row approval-form">
+      <label>拓扑版本<select id="approveTopology"></select></label>
+      <label>规则版本<select id="approveRule"></select></label>
+      <label>场景版本<select id="approveScenario"></select></label>
+      <button id="approveSelected">冻结为新批准版本</button>
+    </div>
+  </section>
+
+  <section class="grid two">
+    <div class="card">
+      <h2>拓扑视图</h2>
+      <svg id="topologySvg" viewBox="0 0 760 330" role="img" aria-label="轨道拓扑图"></svg>
+      <div id="topologyIssues" class="diagnostics"></div>
+    </div>
+    <div class="card">
+      <h2>时间步进</h2>
+      <div class="controls">
+        <button id="firstStep">⏮</button>
+        <button id="prevStep">◀</button>
+        <button id="nextStep">▶</button>
+        <button id="lastStep">⏭</button>
+        <span id="stepCounter">0 / 0</span>
+      </div>
+      <pre id="stepDetail">选择规则候选并运行比较后，可逐步播放最短反例。</pre>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>规则候选与批准版本比较</h2>
+    <div class="form-row">
+      <label>候选规则
+        <select id="candidateRule"></select>
+      </label>
+      <label>深度上限 <input id="maxDepth" type="number" value="64" min="1"></label>
+      <label>状态上限 <input id="maxStates" type="number" value="50000" min="1"></label>
+      <button id="runCompare" class="primary">运行有界 BFS 比较</button>
+    </div>
+    <div id="comparison" class="comparison"></div>
+  </section>
+
+  <section class="grid three">
+    <div class="card">
+      <h2>手工设备故障 → 新场景版本</h2>
+      <div class="form-row">
+        <label>场景版本 <select id="faultScenario"></select></label>
+        <label>设备 <input id="faultDevice" value="T3"></label>
+        <label>插入在动作序号后 <input id="faultAfter" type="number" value="1" min="0"></label>
+        <button id="insertFault">生成故障场景</button>
+      </div>
+      <p class="hint">该操作提交新的不可改原始证据，并以旧场景版本为 base；旧批准不会回写。</p>
+    </div>
+    <div class="card">
+      <h2>拓扑导入检查</h2>
+      <textarea id="topologyEditor" spellcheck="false"></textarea>
+      <div class="form-row">
+        <input id="topologyBase" placeholder="baseRevisionId，可留空">
+        <button id="validateTopology">检查悬空/方向/可达</button>
+        <button id="saveTopology" class="primary">接收为候选拓扑</button>
+      </div>
+      <div id="topologyImportIssues" class="diagnostics"></div>
+    </div>
+    <div class="card">
+      <h2>两浏览器旧版本冲突演示</h2>
+      <p class="hint">先复制一个规则 payload，打开第二个页面用同一 base 提交不同内容；第二方会收到 409 并可重新合并。</p>
+      <button id="simulateConflict">模拟后到提交</button>
+      <pre id="conflictResult">尚未模拟。</pre>
+    </div>
+  </section>
+
+  <section class="grid two">
+    <div class="card">
+      <h2>规则候选编辑</h2>
+      <textarea id="ruleEditor" spellcheck="false"></textarea>
+      <div class="form-row">
+        <input id="ruleBase" placeholder="baseRevisionId，留空表示当前头版本">
+        <button id="saveRule">提交规则版本</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>版本、指纹与原始证据</h2>
+      <div class="tabs">
+        <button data-kind="topology" class="active">拓扑</button>
+        <button data-kind="rule">规则</button>
+        <button data-kind="scenario">场景</button>
+      </div>
+      <select id="revisionSelect"></select>
+      <pre id="revisionPayload"></pre>
+    </div>
+  </section>
+</main>
+
+<div id="toast"></div>
+<script src="/app.js"></script>
+</body>
+</html>
